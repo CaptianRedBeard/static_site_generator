@@ -12,7 +12,7 @@ def extract_title(md):
     raise ValueError("no title found")
 
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, basepath):
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
 
     if not dest_path:
@@ -38,6 +38,9 @@ def generate_page(from_path, template_path, dest_path):
     final_html = template.replace('{{ Title }}', title)
     final_html = final_html.replace('{{ Content }}', html_content)
 
+    final_html = final_html.replace('#href="/', 'href="{BASEPATH}')
+    final_html = final_html.replace('src="/', 'src="{BASEPATH}')
+
     #Write the new full HTML page to a file at dest_path. Be sure to create any necessary directories if they don't exist.
     dest_dir_path = os.path.dirname(dest_path)
     
@@ -47,7 +50,7 @@ def generate_page(from_path, template_path, dest_path):
         file.write(final_html)
 
 
-def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, basepath):
     for item in os.listdir(dir_path_content):
         item_path = os.path.join(dir_path_content, item)
         new_dir = os.path.join(dest_dir_path, item)
@@ -57,12 +60,12 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
             if not os.path.exists(new_dir):
                 os.mkdir(new_dir)           
             
-            generate_pages_recursive(item_path, template_path, new_dir)
+            generate_pages_recursive(item_path, template_path, new_dir, basepath)
             continue
 
         if item.endswith(".md"):
             new_dir = new_dir[:-3]
             new_dir += '.html'
-            generate_page(item_path, template_path, new_dir)
+            generate_page(item_path, template_path, new_dir, basepath)
 
 
